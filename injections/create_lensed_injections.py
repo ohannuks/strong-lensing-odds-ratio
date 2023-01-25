@@ -27,3 +27,18 @@ variable_names = gw_parameters.keys()
 # Save the events
 np.savez('lensed_events.npz', idx=idx, mu0=mu0, mu1=mu1, mu2=mu2, mu3=mu3, td0=td0, td1=td1, td2=td2, td3=td3, **{key: gw_parameters[key][idx] for key in variable_names})
 
+# Now load the events for testing 
+data = np.load('lensed_events.npz')
+idx = data['idx']
+mu0, mu1, mu2, mu3 = data['mu0'], data['mu1'], data['mu2'], data['mu3']
+td0, td1, td2, td3 = data['td0'], data['td1'], data['td2'], data['td3']
+gw_parameters = {key: data[key] for key in data.keys() if key not in ['idx', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3']}
+
+# Now save the events as a txt file, including all of the binary black hole parameters
+labels = ['idx', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3'] + list(gw_parameters.keys())
+np.savetxt('lensed_events.txt', np.array([idx, mu0, mu1, mu2, mu3, td0, td1, td2, td3] + list(gw_parameters.values())).T, header=' '.join(labels))
+
+
+
+
+
