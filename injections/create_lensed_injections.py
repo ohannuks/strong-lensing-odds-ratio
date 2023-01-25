@@ -3,7 +3,7 @@ import numpy as np
 
 # Create lensed events with SNR cut-off greater than 8
 lensed_statistics = ler.Lensed()
-nsamples = int(1e5)
+nsamples = int(1e3)
 lensed_events = lensed_statistics.create_lensed_images(size=nsamples)
 
 # get the network snr for each event and for each image 
@@ -38,7 +38,7 @@ data = np.load('lensed_events.npz')
 idx = data['idx']
 mu0, mu1, mu2, mu3 = data['mu0'], data['mu1'], data['mu2'], data['mu3']
 td0, td1, td2, td3 = data['td0'], data['td1'], data['td2'], data['td3']
-gw_parameters = {key: data[key] for key in data.keys() if key not in ['idx', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3']}
+gw_parameters = {key: data[key] for key in data.keys() if key not in ['idx', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3', 'snr0', 'snr1', 'snr2', 'snr3', 'snr4']}
 
 # Now save the events as a txt file, including all of the binary black hole parameters and snr values
 labels = ['idx', 'snr0', 'snr1', 'snr2', 'snr3', 'snr4', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3'] + list(gw_parameters.keys())
