@@ -3,7 +3,7 @@ import numpy as np
 
 # Create lensed events with SNR cut-off greater than 8
 lensed_statistics = ler.Lensed()
-nsamples = int(1e3)
+nsamples = int(1e5)
 lensed_events = lensed_statistics.create_lensed_images(size=nsamples)
 
 # get the network snr for each event and for each image 
