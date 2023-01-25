@@ -15,7 +15,7 @@ snr2 = snrs[:,2]
 snr3 = snrs[:,3]
 snr4 = snrs[:,4]
 
-# Choose only the events which have 4 or more images and they are all detectable
+# Choose only the events which have 4 that are all detectable
 snr_cut = 8
 n_images = lensed_events['n_images'] # (num_lensed_events,)
 idx = np.where((n_images >= 4) & (snrs[:, 0] > snr_cut) & (snrs[:, 1] > snr_cut) & (snrs[:, 2] > snr_cut) & (snrs[:, 3] > snr_cut))[0]
@@ -29,6 +29,10 @@ td0, td1, td2, td3 = td[:, 0], td[:, 1], td[:, 2], td[:, 3]
 # Get the binary black hole parameters 
 gw_parameters = lensed_events['gw_param']
 variable_names = gw_parameters.keys()
+# Choose only those gw parameters that are detectable 
+gw_parameters = {key: gw_parameters[key][idx] for key in variable_names}
+# Choose only those snr values that are detectable
+snr0 = snr0[idx]; snr1 = snr1[idx]; snr2 = snr2[idx]; snr3 = snr3[idx]; snr4 = snr4[idx]
 
 # Save the events, including the snr values
 np.savez('lensed_events.npz', idx=idx, snr0=snr0, snr1=snr1, snr2=snr2, snr3=snr3, snr4=snr4, mu0=mu0, mu1=mu1, mu2=mu2, mu3=mu3, td0=td0, td1=td1, td2=td2, td3=td3, **gw_parameters)
@@ -38,10 +42,12 @@ data = np.load('lensed_events.npz')
 idx = data['idx']
 mu0, mu1, mu2, mu3 = data['mu0'], data['mu1'], data['mu2'], data['mu3']
 td0, td1, td2, td3 = data['td0'], data['td1'], data['td2'], data['td3']
+snr0, snr1, snr2, snr3, snr4 = data['snr0'], data['snr1'], data['snr2'], data['snr3'], data['snr4']
 gw_parameters = {key: data[key] for key in data.keys() if key not in ['idx', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3', 'snr0', 'snr1', 'snr2', 'snr3', 'snr4']}
 
 # Now save the events as a txt file, including all of the binary black hole parameters and snr values
 labels = ['idx', 'snr0', 'snr1', 'snr2', 'snr3', 'snr4', 'mu0', 'mu1', 'mu2', 'mu3', 'td0', 'td1', 'td2', 'td3'] + list(gw_parameters.keys())
 np.savetxt('lensed_events.txt', np.array([idx, snr0, snr1, snr2, snr3, snr4, mu0, mu1, mu2, mu3, td0, td1, td2, td3] + list(gw_parameters.values())).T, header=' '.join(labels))
+#np.savetxt('lensed_events.txt', np.array([idx, snr0, snr1, snr2, snr3, snr4, mu0, mu1, mu2, mu3, td0, td1, td2, td3] + list(gw_parameters.values())).T, header=' '.join(labels))
 
 
