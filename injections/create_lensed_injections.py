@@ -9,8 +9,8 @@ import golum
 from quintet import Quintet
 importlib.reload(ler)
 import bilby.core.utils as utils
-import helperroutines as hr
-from lens_galaxy_population import LensGalaxyPopulationHaris2018SDSS
+import ler.helperroutines as hr
+from ler.lens_galaxy_population import LensGalaxyPopulationHaris2018SDSS
 from pathos.multiprocessing import ProcessingPool as Pool
 from corner import corner
 import os
