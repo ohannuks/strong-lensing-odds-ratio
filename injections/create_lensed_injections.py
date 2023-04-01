@@ -25,6 +25,8 @@ if os.path.isfile('quintet_object.pkl'):
         quintet_object = pickle.load(f)
 else:
     quintet_object = Quintet(waveform_approximant="IMRPhenomD")
+    with open('quintet_object.pkl', 'wb') as f:
+        pickle.dump(quintet_object, f)
 # Create galaxy source population
 galaxy_source_population = ler.SourceGalaxyPopulationHaris2018SDSS()
 # Plot out the galaxy source redshift distribution
