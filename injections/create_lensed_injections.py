@@ -23,7 +23,7 @@ np.random.seed(1234) # for reproducibility
 try:
     quintet_object
 except NameError:
-    quintet_object = Quintet()
+    quintet_object = Quintet(waveform_approximant="IMRPhenomD")
 # Create galaxy source population
 galaxy_source_population = ler.SourceGalaxyPopulationHaris2018SDSS()
 # Plot out the galaxy source redshift distribution
@@ -40,18 +40,32 @@ lensed_bbh_statistics = ler.LensedCBCStatistics(galaxy_source_population, cbc_so
 print("Rate of lensing is", lensed_bbh_statistics.rate_detectable())
 print("Rate of unlensing is", unlensed_bbh_statistics.rate_detectable())
 
+
 # Sample the detectable, lensed BBH events with 4 images that all have snr above 8
 nevents = 1000
 n_images = 4
 snr_threshold = 8
-detectable_lensed_event_parameters = lensed_bbh_statistics.sample_detectable_events(nevents, n_images, snr_threshold)
-# Save the detectable lensed event parameters dictionary as numpy txt file
-hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters, fname= 'detectable_lensed_event_parameters.txt' )
+# Check if 'detectable_lensed_event_parameters.txt' exists
+if os.path.isfile('detectable_lensed_event_parameters.txt'):
+    # If it does, load the file
+    detectable_lensed_event_parameters = np.genfromtxt('detectable_lensed_event_parameters.txt', names=True)
+    # Transform to dictionary
+    detectable_lensed_event_parameters = {key: detectable_lensed_event_parameters[key] for key in detectable_lensed_event_parameters.dtype.names}
+else:
+    detectable_lensed_event_parameters = lensed_bbh_statistics.sample_detectable_events(nevents, n_images, snr_threshold)
+    hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters, fname= 'detectable_lensed_event_parameters.txt' ) # Save the detectable lensed event parameters dictionary as numpy txt file
 
-# sample lensed bbh events with 4 images that do not have an snr cut
-lensed_event_parameters = lensed_bbh_statistics.sample_events(nevents, n_images=4, npool=20) # returns dictionary with parameter names
-# Save the intrinsic lensed event parameters dictionary as numpy txt file
-hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters, fname= 'lensed_event_parameters.txt' )
+# Check if 'lensed_event_parameters.txt' exists
+if os.path.isfile('lensed_event_parameters.txt'):
+    # If it does, load the file
+    lensed_event_parameters = np.genfromtxt('lensed_event_parameters.txt', names=True)
+    # Transform to dictionary
+    lensed_event_parameters = {key: lensed_event_parameters[key] for key in lensed_event_parameters.dtype.names}
+else:
+    # sample lensed bbh events with 4 images that do not have an snr cut
+    lensed_event_parameters = lensed_bbh_statistics.sample_events(nevents, n_images=4, npool=20) # returns dictionary with parameter names
+    # Save the intrinsic lensed event parameters dictionary as numpy txt file
+    hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters, fname= 'lensed_event_parameters.txt' )
 
 # Load the detectable lensed event parameters dictionary
 data = np.genfromtxt('detectable_lensed_event_parameters.txt', names=True)
@@ -63,15 +77,33 @@ names_intrinsic = data_intrinsic.dtype.names
 weights = data['weights']
 weights_intrinsic = data_intrinsic['weights']
 
-# Resample the detectable lensed event parameters with equal weights and save parameters dictionary as numpy txt file
-detectable_lensed_event_parameters_resampled = hr.resample_dictionary(detectable_lensed_event_parameters, weights, nevents=50)
-hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters_resampled, fname= 'detectable_lensed_event_parameters_resampled.txt' )
-lensed_event_parameters_resampled = hr.resample_dictionary(lensed_event_parameters, weights_intrinsic, nevents=50)
-hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters_resampled, fname= 'lensed_event_parameters_resampled.txt' )
+# Check if 'detectable_lensed_event_parameters_resampled.txt' exists
+if os.path.isfile('detectable_lensed_event_parameters_resampled.txt'):
+    # If it does, load the file
+    detectable_lensed_event_parameters_resampled = np.genfromtxt('detectable_lensed_event_parameters_resampled.txt', names=True)
+    # Transform to dictionary
+    detectable_lensed_event_parameters_resampled = {key: detectable_lensed_event_parameters_resampled[key] for key in detectable_lensed_event_parameters_resampled.dtype.names}
+else:
+    # Resample the detectable lensed event parameters with equal weights and save parameters dictionary as numpy txt file
+    detectable_lensed_event_parameters_resampled = hr.resample_dictionary(detectable_lensed_event_parameters, weights, nevents=50)
+    hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters_resampled, fname= 'detectable_lensed_event_parameters_resampled.txt' )
+
+# Check if 'lensed_event_parameters_resampled.txt' exists
+if os.path.isfile('lensed_event_parameters_resampled.txt'):
+    # If it does, load the file
+    lensed_event_parameters_resampled = np.genfromtxt('lensed_event_parameters_resampled.txt', names=True)
+    # Transform to dictionary
+    lensed_event_parameters_resampled = {key: lensed_event_parameters_resampled[key] for key in lensed_event_parameters_resampled.dtype.names}
+else:
+    lensed_event_parameters_resampled = hr.resample_dictionary(lensed_event_parameters, weights_intrinsic, nevents=50)
+    hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters_resampled, fname= 'lensed_event_parameters_resampled.txt' )
 
 # Compute the rate of lensing
 rate_of_lensing, _ = lensed_bbh_statistics.rate_detectable(zs=False,size=10000,ndraws=20, n_images=4, model_pars_gwcosmo = False, use_pdet = False)
 rate_of_not_lensed, _ = unlensed_bbh_statistics.rate_detectable(size=10000)
+
+# Compute TLU for quads
+TLU_quad = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters_resampled)
 
 # Create a directory for the figures
 if not os.path.exists('figures'):
