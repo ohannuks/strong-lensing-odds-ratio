@@ -19,10 +19,11 @@ utils.logger.disabled = True # Disable bilby logger
 
 np.random.seed(1234) # for reproducibility
 
-# Initialize the quintet object for SNR computations unless it has already been defined
-try:
-    quintet_object
-except NameError:
+# Check if 'quintet_object.pkl' file exists
+if os.path.isfile('quintet_object.pkl'):
+    with open('quintet_object.pkl', 'rb') as f:
+        quintet_object = pickle.load(f)
+else:
     quintet_object = Quintet(waveform_approximant="IMRPhenomD")
 # Create galaxy source population
 galaxy_source_population = ler.SourceGalaxyPopulationHaris2018SDSS()
