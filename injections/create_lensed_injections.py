@@ -77,6 +77,7 @@ if os.path.isfile('detectable_lensed_event_parameters_resampled.txt'):
 else:
     # Resample the detectable lensed event parameters with equal weights and save parameters dictionary as numpy txt file
     detectable_lensed_event_parameters_resampled = hr.resample_dictionary(detectable_lensed_event_parameters, weights, nevents=50)
+    detectable_lensed_event_parameters_resampled['weights']=np.ones(len(detectable_lensed_event_parameters_resampled['weights']))
     hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters_resampled, fname= 'detectable_lensed_event_parameters_resampled.txt' )
 
 # Check if 'lensed_event_parameters_resampled.txt' exists
@@ -84,6 +85,7 @@ if os.path.isfile('lensed_event_parameters_resampled.txt'):
     lensed_event_parameters_resampled = hr.load_dictionary_from_numpy_txt_file('lensed_event_parameters_resampled.txt')
 else:
     lensed_event_parameters_resampled = hr.resample_dictionary(lensed_event_parameters, weights_intrinsic, nevents=50)
+    lensed_event_parameters_resampled['weights']=np.ones(len(lensed_event_parameters_resampled['weights']))
     hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters_resampled, fname= 'lensed_event_parameters_resampled.txt' )
 
 # Compute the rate of lensing
