@@ -91,21 +91,21 @@ rate_of_lensing, _ = lensed_bbh_statistics.rate_detectable(zs=False,size=10000,n
 rate_of_not_lensed, _ = unlensed_bbh_statistics.rate_detectable(size=10000)
 
 # Compute TLU for quads for detectable lensed event parameters resampled
-TLU_quad = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters_resampled)
+tlu = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters_resampled)
 # Add the TLU to the dictionary
-detectable_lensed_event_parameters_resampled['TLU_quad'] = TLU_quad
+detectable_lensed_event_parameters_resampled['tlu'] = tlu
 # Compute TLU for quads for intrinsic lensed event parameters resampled
-TLU_quad_intrinsic = lensed_bbh_statistics.TLU(lensed_event_parameters_resampled)
+tlu = lensed_bbh_statistics.TLU(lensed_event_parameters_resampled)
 # Add the TLU to the dictionary
-lensed_event_parameters_resampled['TLU_quad_intrinsic'] = TLU_quad_intrinsic
+lensed_event_parameters_resampled['tlu'] = tlu
 # Compute TLU for quads for detectable lensed event parameters
-TLU_quad = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters)
+tlu = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters)
 # Add the TLU to the dictionary
-detectable_lensed_event_parameters['TLU_quad'] = TLU_quad
+detectable_lensed_event_parameters['tlu'] = tlu
 # Compute TLU for quads for intrinsic lensed event parameters
-TLU_quad_intrinsic = lensed_bbh_statistics.TLU(lensed_event_parameters)
+tlu = lensed_bbh_statistics.TLU(lensed_event_parameters)
 # Add the TLU to the dictionary
-lensed_event_parameters['TLU_quad_intrinsic'] = TLU_quad_intrinsic
+lensed_event_parameters['tlu'] = tlu
 
 # Save the updated dictionaries
 hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters, fname= 'detectable_lensed_event_parameters_TLU.txt' )
