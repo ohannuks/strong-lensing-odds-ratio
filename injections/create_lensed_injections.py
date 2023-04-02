@@ -16,12 +16,12 @@ utils.logger.disabled = True # Disable bilby logger
 np.random.seed(1234) # for reproducibility
 
 # Check if 'quintet_object.pkl' file exists
-if os.path.isfile('quintet_object.pkl'):
-    with open('quintet_object.pkl', 'rb') as f:
+if os.path.isfile('.quintet_object.pkl'):
+    with open('.quintet_object.pkl', 'rb') as f:
         quintet_object = pickle.load(f)
 else:
     quintet_object = Quintet(waveform_approximant="IMRPhenomD")
-    with open('quintet_object.pkl', 'wb') as f:
+    with open('.quintet_object.pkl', 'wb') as f:
         pickle.dump(quintet_object, f)
 # Create galaxy source population
 galaxy_source_population = ler.SourceGalaxyPopulationHaris2018SDSS()
