@@ -90,8 +90,28 @@ else:
 rate_of_lensing, _ = lensed_bbh_statistics.rate_detectable(zs=False,size=10000,ndraws=20, n_images=4, model_pars_gwcosmo = False, use_pdet = False)
 rate_of_not_lensed, _ = unlensed_bbh_statistics.rate_detectable(size=10000)
 
-# Compute TLU for quads
+# Compute TLU for quads for detectable lensed event parameters resampled
 TLU_quad = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters_resampled)
+# Add the TLU to the dictionary
+detectable_lensed_event_parameters_resampled['TLU_quad'] = TLU_quad
+# Compute TLU for quads for intrinsic lensed event parameters resampled
+TLU_quad_intrinsic = lensed_bbh_statistics.TLU(lensed_event_parameters_resampled)
+# Add the TLU to the dictionary
+lensed_event_parameters_resampled['TLU_quad_intrinsic'] = TLU_quad_intrinsic
+# Compute TLU for quads for detectable lensed event parameters
+TLU_quad = lensed_bbh_statistics.TLU(detectable_lensed_event_parameters)
+# Add the TLU to the dictionary
+detectable_lensed_event_parameters['TLU_quad'] = TLU_quad
+# Compute TLU for quads for intrinsic lensed event parameters
+TLU_quad_intrinsic = lensed_bbh_statistics.TLU(lensed_event_parameters)
+# Add the TLU to the dictionary
+lensed_event_parameters['TLU_quad_intrinsic'] = TLU_quad_intrinsic
+
+# Save the updated dictionaries
+hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters, fname= 'detectable_lensed_event_parameters_TLU.txt' )
+hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters, fname= 'lensed_event_parameters_TLU.txt' )
+hr.save_dictionary_to_numpy_txt_file(detectable_lensed_event_parameters_resampled, fname= 'detectable_lensed_event_parameters_resampled_TLU.txt' )
+hr.save_dictionary_to_numpy_txt_file(lensed_event_parameters_resampled, fname= 'lensed_event_parameters_resampled_TLU.txt' )
 
 # Create a directory for the figures
 if not os.path.exists('figures'):
