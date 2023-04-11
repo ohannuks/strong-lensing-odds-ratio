@@ -33,7 +33,7 @@ dec = injection_data['dec'][line_number]
 # Get the magnifications, time delays, and image types
 magnification = injection_data["magnifications_%d" % image_number][line_number]
 time_delay = injection_data["time_delays_%d" % image_number][line_number]
-image_type = injection_data["image_types_%d" % image_number][line_number]
+image_type = injection_data["image_type_%d" % image_number][line_number]
 # Convert image type to morse phase (see https://arxiv.org/abs/astro-ph/0305055, Eq. )
 nj = image_type*0.5
 morse_phase = -np.pi*nj
