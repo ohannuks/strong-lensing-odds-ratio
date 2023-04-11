@@ -1,3 +1,5 @@
+INJECTION=$1
+IMAGENUMBER=$2
 
 injectdata () {
   injection=$1
@@ -32,8 +34,5 @@ injectdata () {
   # XLA_PYTHON_CLIENT_PREALLOCATE=false flowmc_inject pe${injection}_${imagenumber} ${mass1} ${mass2} ${a1} ${a2} ${effective_luminosity_distance} ${effective_geocent_time} ${effective_phase} ${iota} ${psi} ${ra} ${dec}
   echo ""
 }
-injectdata "1" "0"
-injectdata "1" "1"
-injectdata "1" "2"
-injectdata "1" "3"
+injectdata "${INJECTION}" "${IMAGENUMBER}"
 
