@@ -4,7 +4,7 @@ import sys
 # Check if the user has provided the correct number of arguments
 if len(sys.argv) != 4:
     print("Usage: python3 read_injection_data.py <injection_file> <line number> <image number (0 to 3)>")
-    print("Example: python3 detectable_lensed_event_parameters_resampled_TLU.txt injection_data.txt 1 0")
+    print("Example: python3 read_injection_data.py detectable_lensed_event_parameters_resampled_TLU.txt 1 0")
     print("Returns m1 m2 chi1 chi2 dist tc phic inc pol ra dec")
     print("Note: The coalescence times, luminosity distances, and phic are the effective coalescence times, luminosity distances, and phics, and we assume the IMRPhenomD waveform.")
     sys.exit(1)
@@ -34,6 +34,7 @@ dec = injection_data['dec'][line_number]
 magnification = injection_data["magnifications_%d" % image_number][line_number]
 time_delay = injection_data["time_delays_%d" % image_number][line_number]
 image_type = injection_data["image_type_%d" % image_number][line_number]
+snr_opt_snr_net = injection_data["snr_opt_snr_net_%d" % image_number][line_number]
 # Convert image type to morse phase (see https://arxiv.org/abs/astro-ph/0305055, Eq. )
 nj = image_type*0.5
 morse_phase = -np.pi*nj
@@ -45,5 +46,5 @@ effective_phase = phase + morse_phase
 
 # Print the injection data
 # m1 m2 chi1 chi2 dist tc phic inc pol ra dec
-print(mass_1, mass_2, a_1, a_2, effective_luminosity_distance, effective_geocent_time, effective_phase, iota, psi, ra, dec)
+print(mass_1, mass_2, a_1, a_2, effective_luminosity_distance, effective_geocent_time, effective_phase, iota, psi, ra, dec, snr_opt_snr_net)
 
