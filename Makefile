@@ -9,7 +9,7 @@ injections/detectable_lensed_event_parameters_resampled_TLU.txt: injections/crea
 	cd ..
 
 # Create single pe images
-injections/single_pe_image_%.npz: injections/create_single_pe_images.py
+injections/single_pe_image_%.npz: injections/create_single_pe_images.py injections/detectable_lensed_event_parameters_resampled_TLU.txt
 	cd injections && python3 create_single_pe_images.py
 	cd ..
 
