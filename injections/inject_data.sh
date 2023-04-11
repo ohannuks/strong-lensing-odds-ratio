@@ -25,12 +25,15 @@ injectdata () {
   echo "${mass1} ${mass2} ${a1} ${a2} ${tilt_1} ${tilt_2} ${phi_12} ${phi_jl} ${effective_luminosity_distance} ${effective_geocent_time} ${effective_phase} ${iota} ${psi} ${ra} ${dec} ${snr_opt_snr_net}"
   # Now run golum_inject
   # Usage: golum_inject output m1 m2 chi1 chi2 dist tc phic inclination polarization ra dec imagetype snr
-  #####golum_inject injection_${injection}_image_${imagenumber} ${mass1} ${mass2} ${a1} ${a2} ${tilt_1} ${tilt_2} ${phi_12} ${phi_jl} ${effective_luminosity_distance} ${effective_geocent_time} ${effective_phase} ${iota} ${psi} ${ra} ${dec} 0 ${snr_opt_snr_net}
+  golum_inject injection_${injection}_image_${imagenumber} ${mass1} ${mass2} ${a1} ${a2} ${tilt_1} ${tilt_2} ${phi_12} ${phi_jl} ${effective_luminosity_distance} ${effective_geocent_time} ${effective_phase} ${iota} ${psi} ${ra} ${dec} 0 ${snr_opt_snr_net}
   # # Now run flowmc_inject to inject and run the injection with flowmc
   # # Usage: flowmc_inject output m1 m2 chi1 chi2 dist tc phic inclination polarization ra dec
   # # Usage: XLA_PYTHON_CLIENT_PREALLOCATE=false flowmc_inject pe1 35 30 0.3 -0.4 400 0.02 0.1 0.5 0.2 1.2 0.3
   # XLA_PYTHON_CLIENT_PREALLOCATE=false flowmc_inject pe${injection}_${imagenumber} ${mass1} ${mass2} ${a1} ${a2} ${effective_luminosity_distance} ${effective_geocent_time} ${effective_phase} ${iota} ${psi} ${ra} ${dec}
   echo ""
 }
-injectdata "3" "0"
+injectdata "1" "0"
+injectdata "1" "1"
+injectdata "1" "2"
+injectdata "1" "3"
 
