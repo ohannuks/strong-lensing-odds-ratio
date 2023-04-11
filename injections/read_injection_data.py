@@ -22,6 +22,10 @@ mass_1 = injection_data['mass_1'][line_number]
 mass_2 = injection_data['mass_2'][line_number]
 a_1 = injection_data['a_1'][line_number]
 a_2 = injection_data['a_2'][line_number]
+tilt_1 = injection_data['tilt_1'][line_number]
+tilt_2 = injection_data['tilt_2'][line_number]
+phi_12 = injection_data['phi_12'][line_number]
+phi_jl = injection_data['phi_jl'][line_number]
 luminosity_distance = injection_data['luminosity_distance'][line_number]
 geocent_time = injection_data['geocent_time'][line_number]
 phase = injection_data['phase'][line_number]
@@ -46,5 +50,5 @@ effective_phase = phase + morse_phase
 
 # Print the injection data
 # m1 m2 chi1 chi2 dist tc phic inc pol ra dec
-print(mass_1, mass_2, a_1, a_2, effective_luminosity_distance, effective_geocent_time, effective_phase, iota, psi, ra, dec, snr_opt_snr_net)
+print(mass_1, mass_2, a_1, a_2, tilt_1, tilt_2, phi_12, phi_jl, effective_luminosity_distance, effective_geocent_time, effective_phase, iota, psi, ra, dec, snr_opt_snr_net)
 
