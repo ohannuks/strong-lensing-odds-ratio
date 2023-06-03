@@ -22,6 +22,11 @@ injections/outdir/pm_injection_1_image_3/summary.txt: injections/inject_data.sh 
 	cd injections && ./inject_data.sh 1 3
 	cd ..
 
+# Now run the multi-image analysis. It should take as input the injection number, and run the golum analysis on all 4 images
+injections/outdir/pm_injection_1_multiimage/summary.txt: injections/inject_multiimage_data.sh injections/outdir/pm_injection_1_image_0/summary.txt injections/outdir/pm_injection_1_image_1/summary.txt injections/outdir/pm_injection_1_image_2/summary.txt injections/outdir/pm_injection_1_image_3/summary.txt
+	cd injections && ./inject_multiimage_data.sh 1
+	cd ..
+
 # Clean up
 clean:
 	rm -f injections/*.txt
