@@ -3,7 +3,7 @@ import sys
 
 # Check if the user has provided the correct number of arguments
 if len(sys.argv) != 4:
-    print("Usage: python3 read_injection_data.py <injection_file> <line number> <image number (0 to 3)>")
+    print("Usage: python3 read_injection_data.py <injection_file> <injection number> <image number (0 to 3)>")
     print("Example: python3 read_injection_data.py detectable_lensed_event_parameters_resampled_TLU.txt 1 0")
     print("Returns m1 m2 chi1 chi2 dist tc phic inc pol ra dec")
     print("Note: The coalescence times, luminosity distances, and phic are the effective coalescence times, luminosity distances, and phics, and we assume the IMRPhenomD waveform.")

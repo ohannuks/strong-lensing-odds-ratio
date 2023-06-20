@@ -1,6 +1,7 @@
-all: injectionparameters injections_single_pe
+all: injectionparameters injections_single_pe injection_multi_pe
 
 injectionparameters: injections/detectable_lensed_event_parameters_resampled_TLU.txt
+injection_multi_pe: injections/outdir/pm_injection_1_multiimage/summary.txt
 injections_single_pe: injections/outdir/pm_injection_1_image_0/summary.txt injections/outdir/pm_injection_1_image_1/summary.txt injections/outdir/pm_injection_1_image_2/summary.txt injections/outdir/pm_injection_1_image_3/summary.txt 
 
 # Create injection parameters as well as intrinsic parameters for the population
