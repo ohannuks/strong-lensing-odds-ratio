@@ -3,6 +3,7 @@ import bilby
 from kde import KernelDensityTransformed
 from sklearn.preprocessing import QuantileTransformer, PowerTransformer
 import pandas as pd
+import numpy as np
 
 def load_bilby_arguments(filename):
     ''' Load a pickle file containing a dictionary of arguments for bilby
@@ -103,7 +104,93 @@ def kde_sample(kde, parameters, n_samples=10000):
     df = pd.DataFrame(samples, columns=parameters)
     return df
 
-def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, parameters_15d, parameters_eff, n_samples=100000):
+def add_chirp_mass_mass_ratio_to_samples(samples):
+    ''' Add chirp mass and mass ratio to a set of samples
+
+    Parameters
+    samples: pandas DataFrame object containing samples
+
+    Returns
+    samples: pandas DataFrame object containing samples with chirp mass and mass ratio added
+
+    Example:
+    outdir='outdir'
+    labels = [ 'injection_1_image_0', 'injection_1_image_1', 'injection_1_image_2', 'injection_1_image_3']
+    results, waveform_arguments, waveform_generators, priors, ifos, likelihoods, posteriors = load_all_results(outdir, labels)
+    kdes_15d, kdes_eff = build_kdes(posteriors, parameters_15d, parameters_eff)
+    samples = kde_sample(kdes_15d[0], parameters_15d)
+    samples = add_chirp_mass_mass_ratio_to_samples(samples)
+    '''
+    # Compute chirp mass, mass ratio
+    samples['chirp_mass'] = bilby.gw.conversion.component_masses_to_chirp_mass(samples['mass_1'], samples['mass_2'])
+    samples['mass_ratio'] = bilby.gw.conversion.component_masses_to_mass_ratio(samples['mass_1'], samples['mass_2'])
+    return samples
+
+def get_all_samples(samples, other_samples, i, parameters_eff, n_kdes):
+    # First copy the samples over 
+    samples_full = samples.copy()
+    # Now rename the effective parameters to parameters_eff_i
+    for j, parameter in enumerate(parameters_eff):
+        samples_full['{}_{}'.format(parameter, i)] = samples_full[parameter]
+        del samples_full[parameter]
+    # Then add in the other effective parameters
+    for j in range(n_kdes):
+        if i == j:
+            continue
+        for parameter in parameters_eff:
+            samples_full['{}_{}'.format(parameter, j)] = other_samples[j][parameter]
+    return samples_full
+
+def get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i):
+    n_kdes = len(posterior_kdes)
+    this_kde = posterior_kdes[i]
+    this_kde_eff = posterior_kdes_eff[i]
+    this_prior = priors[i]
+    # Loop over all other kdes
+    other_kdes = []
+    other_kdes_eff = []
+    other_priors = []
+    for j in range(n_kdes):
+        if i == j:
+            continue
+        other_kdes.append(posterior_kdes[j])
+        other_kdes_eff.append(posterior_kdes_eff[j])
+        other_priors.append(priors[j])
+    return this_kde, other_kdes, this_kde_eff, other_kdes_eff, this_prior, other_priors
+
+def get_log_kde_values(kde, kde_eff, prior, samples, parameters_15d, parameters_eff):
+    # Evaluate the kdes at the samples
+    log_pos = kde.score_samples(samples)
+    # Do the same for the effective parameters
+    log_pos_eff = kde_eff.score_samples(samples[parameters_eff])
+    # Evaluate the prior log probabilities
+    samples = add_chirp_mass_mass_ratio_to_samples(samples)
+    other_samples = [add_chirp_mass_mass_ratio_to_samples(other_samples[j]) for j in range(n_kdes-1)]
+    log_prior = prior.ln_prob(samples, axis=0)
+    # Evaluate the prior log probabilities for the effective parameters
+    log_prior_eff = prior.ln_prob(samples[parameters_eff], axis=0)
+    return log_pos, log_pos_eff, log_prior, log_prior_eff
+def get_log_kde_values_list(kdes, kdes_eff, priors, samples, parameters_15d, parameters_eff):
+    n_kdes = len(kdes)
+    log_pos_list = []
+    log_pos_eff_list = []
+    log_prior_list = []
+    log_prior_eff_list = []
+    for i in range(n_kdes):
+        log_pos, log_pos_eff, log_prior, log_prior_eff = get_log_kde_values(kdes[i], kdes_eff[i], priors[i], samples, parameters_15d, parameters_eff)
+        log_pos_list.append(log_pos)
+        log_pos_eff_list.append(log_pos_eff)
+        log_prior_list.append(log_prior)
+        log_prior_eff_list.append(log_prior_eff)
+    # Sum the log probabilities at axis=0
+    log_pos = np.sum(log_pos_list, axis=0)
+    log_pos_eff = np.sum(log_pos_eff_list, axis=0)
+    log_prior = np.sum(log_prior_list, axis=0)
+    log_prior_eff = np.sum(log_prior_eff_list, axis=0)
+    return log_pos, log_pos_eff, log_prior, log_prior_eff
+
+
+def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15d, parameters_eff, n_samples=100000):
     ''' Joint KDE analysis. 
 
     Parameters
@@ -124,17 +211,10 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, parameters_15d, param
     joint_kde, joint_kde_eff, joint_kde_15d = joint_kde_analysis(kdes_15d, kdes_eff, parameters_15d, parameters_eff)
     '''
     n_kdes = len(posterior_kdes)
+    samples_all = []
+    log_weights_all = []
     for i in range(n_kdes):
-        this_kde = posterior_kdes[i]
-        this_kde_eff = posterior_kdes_eff[i]
-        # Loop over all other kdes
-        other_kdes = []
-        other_kdes_eff = []
-        for j in range(n_kdes):
-            if i == j:
-                continue
-            other_kdes.append(posterior_kdes[j])
-            other_kdes_eff.append(posterior_kdes_eff[j])
+        this_kde, other_kdes, this_kde_eff, other_kdes_eff, this_prior, other_priors = get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i)
         # Sample from this kde
         samples = kde_sample(this_kde, parameters_15d, n_samples=n_samples)
         # Now sample from the other kdes with effective parameters only
@@ -143,6 +223,29 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, parameters_15d, param
         other_samples = [samples.copy() for kde_eff in other_kdes_eff]
         for j in range(n_kdes-1):
             other_samples[j][parameters_eff] = other_samples_eff[j][parameters_eff]
-        
+        # Get the log posterior, log posterior effective, log prior, and log prior effective values
+        log_pos_this, log_pos_this_eff, log_prior_this, log_prior_this_eff = get_log_kde_values(this_kde, this_kde_eff, this_prior, samples, parameters_15d, parameters_eff)
+        log_pos_others, log_pos_others_eff, log_prior_others, log_prior_others_eff = get_log_kde_values_list(other_kdes, other_kdes_eff, other_priors, samples, parameters_15d, parameters_eff)
+        # Now add up the log probabilities
+        log_pos = log_pos_this + log_pos_others
+        log_prior = log_prior_this + log_prior_others
+        log_pos_eff = log_pos_this_eff + log_pos_others_eff
+        log_prior_eff = log_prior_this_eff + log_prior_others_eff
+        # Compute the weights
+        log_weight = log_pos - log_prior # Add the log likelihoods 
+        log_weight = log_weight + log_prior_this + log_prior_others_eff
+        log_weight = log_weight - log_pos_this - log_pos_others_eff
+        # Save the log weights
+        log_weights_all.append(log_weight)
+        # Define the full samples
+        samples_full = get_all_samples(samples, other_samples, i, parameters_eff, n_kdes)
+        samples_all.append(samples_full)
+    # Now combine the samples and weights
+    samples_all = np.concatenate(samples_all, axis=0)
+    log_weights_all = np.concatenate(log_weights_all, axis=0)
+    # Now build the joint KDE
+    joint_kde = build_kde(samples_all, parameters_15d, log_weights=log_weights_all)
+
+    
 
 
