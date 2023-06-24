@@ -96,7 +96,7 @@ def build_kde(posterior, parameters, log_weights=None):
     Returns
     kde
     '''
-    if log_weights == None:
+    if log_weights is None:
         sample_weight = None
     else:
         sample_weight = np.exp(log_weights-np.max(log_weights))
@@ -158,11 +158,13 @@ def get_all_samples(samples, other_samples, i, parameters_eff, n_kdes):
         samples_full['{}_{}'.format(parameter, i)] = samples_full[parameter]
         del samples_full[parameter]
     # Then add in the other effective parameters
+    j0 = 0
     for j in range(n_kdes):
         if i == j:
             continue
         for parameter in parameters_eff:
-            samples_full['{}_{}'.format(parameter, j)] = other_samples[j][parameter]
+            samples_full['{}_{}'.format(parameter, j)] = other_samples[j0][parameter]
+        j0 = j0 + 1
     return samples_full
 
 def get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i):
@@ -184,15 +186,17 @@ def get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i):
 
 def get_log_kde_values(kde, kde_eff, prior, samples, parameters_15d, parameters_eff):
     # Evaluate the kdes at the samples
-    log_pos = kde.score_samples(samples)
+    log_pos = kde.score_samples(samples[parameters_15d])
     # Do the same for the effective parameters
     log_pos_eff = kde_eff.score_samples(samples[parameters_eff])
     # Evaluate the prior log probabilities
     samples = add_chirp_mass_mass_ratio_to_samples(samples)
-    other_samples = [add_chirp_mass_mass_ratio_to_samples(other_samples[j]) for j in range(n_kdes-1)]
     log_prior = prior.ln_prob(samples, axis=0)
     # Evaluate the prior log probabilities for the effective parameters
-    log_prior_eff = prior.ln_prob(samples[parameters_eff], axis=0)
+    prior_eff = bilby.core.prior.PriorDict()
+    for parameter in parameters_eff:
+        prior_eff[parameter] = prior[parameter]
+    log_prior_eff = prior_eff.ln_prob(samples[parameters_eff], axis=0)
     return log_pos, log_pos_eff, log_prior, log_prior_eff
 def get_log_kde_values_list(kdes, kdes_eff, priors, samples, parameters_15d, parameters_eff):
     n_kdes = len(kdes)
