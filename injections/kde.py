@@ -1,12 +1,12 @@
-from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import QuantileTransformer, PowerTransformer
 from sklearn.neighbors import KernelDensity
 
 class KernelDensityTransformed(KernelDensity):
-    def __init__( self, *, bandwidth='silverman', algorithm="auto", kernel="gaussian", metric="euclidean", atol=0, rtol=0, breadth_first=True, leaf_size=40, metric_params=None):
+    def __init__( self, *, bandwidth='scott', algorithm="auto", kernel="gaussian", metric="euclidean", atol=0, rtol=0, breadth_first=True, leaf_size=40, metric_params=None, pt=QuantileTransformer(output_distribution='normal')):
         # Call the parent init with the same arguments
         super(KernelDensityTransformed, self).__init__(bandwidth=bandwidth, algorithm=algorithm, kernel=kernel, metric=metric, atol=atol, rtol=rtol, breadth_first=breadth_first, leaf_size=leaf_size, metric_params=metric_params)
         # Define the transformation
-        self.pt = QuantileTransformer(output_distribution='normal') 
+        self.pt = pt
     def fit(self, X, y=None, sample_weight=None):
         # Get the data
         data = X
