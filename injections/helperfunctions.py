@@ -54,6 +54,8 @@ def load_all_results(outdir, labels):
         posteriors.append(result.posterior)
     return results, waveform_arguments, waveform_generators, priors, ifos, likelihoods, posteriors
 
+
+
 def build_kdes(posteriors, parameters_15d, parameters_eff):
     ''' Build KDEs for the posteriors
 
@@ -82,6 +84,28 @@ def build_kdes(posteriors, parameters_15d, parameters_eff):
         posterior_samples_eff = posteriors[i][parameters_eff]
         posterior_kdes_eff[i].fit(posterior_samples_eff)
     return posterior_kdes, posterior_kdes_eff
+
+def build_kde(posterior, parameters, log_weights=None):
+    ''' Build KDEs for the posteriors
+
+    Parameters
+    posterior: Posterior parameters
+    parameters: List of parameters
+    log_weights: ln weights for each sample
+
+    Returns
+    kde
+    '''
+    if log_weights == None:
+        sample_weight = None
+    else:
+        sample_weight = np.exp(log_weights-np.max(log_weights))
+        sample_weight = sample_weight/np.sum(sample_weight)
+    # Now build the kdes
+    kde = KernelDensityTransformed(bandwidth='silverman', leaf_size=100, pt=QuantileTransformer(output_distribution='normal'))
+    kde.fit(posterior[parameters], sample_weight=sample_weight)
+    return kde
+
 
 def kde_sample(kde, parameters, n_samples=10000):
     ''' Sample from a KDE and build a pandas object
@@ -201,7 +225,7 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15
     n_samples: Number of samples to draw from the KDEs
 
     Returns
-    joint_kde, joint_kde_eff, joint_kde_15d
+    joint_kde, samples, log_weights
 
     Example:
     outdir='outdir'
@@ -245,7 +269,5 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15
     log_weights_all = np.concatenate(log_weights_all, axis=0)
     # Now build the joint KDE
     joint_kde = build_kde(samples_all, parameters_15d, log_weights=log_weights_all)
-
-    
-
+    return joint_kde, samples_all, log_weights_all
 

@@ -13,7 +13,7 @@ class KernelDensityTransformed(KernelDensity):
         # Transform data
         data_transformed = self.pt.fit_transform(data)
         # Call the parent fit
-        return super(KernelDensityTransformed, self).fit(data_transformed)
+        return super(KernelDensityTransformed, self).fit(data_transformed, y=y, sample_weight=sample_weight)
     def sample(self, n_samples=1, random_state=None):
         data_kde_transformed = super(KernelDensityTransformed, self).sample(n_samples=n_samples, random_state=random_state)
         data_kde = self.pt.inverse_transform(data_kde_transformed)
