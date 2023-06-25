@@ -25,8 +25,8 @@ results, waveform_arguments, waveform_generators, priors, ifos, likelihoods, pos
 kdes_15d, kdes_eff = hf.build_kdes(posteriors, parameters_15d, parameters_eff)
 
 # Sample the joint posterior
-n_samples = 1000
-joint_kde, samples_all, log_weights_all = hf.joint_kde_analysis(kdes_15d, kdes_eff, priors, parameters_15d, parameters_eff, n_samples=n_samples)
+n_samples = 100
+joint_kde, samples_all, log_weights_all, log_prior_this, log_prior_others, samples = hf.joint_kde_analysis(kdes_15d, kdes_eff, priors, parameters_15d, parameters_eff, n_samples=n_samples)
 
 
 

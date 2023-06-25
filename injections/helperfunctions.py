@@ -4,6 +4,7 @@ from kde import KernelDensityTransformed
 from sklearn.preprocessing import QuantileTransformer, PowerTransformer
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 
 def load_bilby_arguments(filename):
     ''' Load a pickle file containing a dictionary of arguments for bilby
@@ -100,9 +101,12 @@ def build_kde(posterior, parameters, log_weights=None):
         sample_weight = None
     else:
         sample_weight = np.exp(log_weights-np.max(log_weights))
+        # Set any NaN to zero
+        sample_weight[np.isnan(sample_weight)] = 0
         sample_weight = sample_weight/np.sum(sample_weight)
     # Now build the kdes
     kde = KernelDensityTransformed(bandwidth='silverman', leaf_size=100, pt=QuantileTransformer(output_distribution='normal'))
+
     kde.fit(posterior[parameters], sample_weight=sample_weight)
     return kde
 
@@ -165,12 +169,13 @@ def get_all_samples(samples, other_samples, i, parameters_eff, n_kdes):
         for parameter in parameters_eff:
             samples_full['{}_{}'.format(parameter, j)] = other_samples[j0][parameter]
         j0 = j0 + 1
-    return samples_full
+    parameters_all = list(samples_full.columns)
+    return samples_full, parameters_all
 
 def get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i):
     n_kdes = len(posterior_kdes)
-    this_kde = posterior_kdes[i]
-    this_kde_eff = posterior_kdes_eff[i]
+    this_kde = deepcopy(posterior_kdes[i])
+    this_kde_eff = deepcopy(posterior_kdes_eff[i])
     this_prior = priors[i]
     # Loop over all other kdes
     other_kdes = []
@@ -179,8 +184,8 @@ def get_this_and_other_kde(posterior_kdes, posterior_kdes_eff, priors, i):
     for j in range(n_kdes):
         if i == j:
             continue
-        other_kdes.append(posterior_kdes[j])
-        other_kdes_eff.append(posterior_kdes_eff[j])
+        other_kdes.append(deepcopy(posterior_kdes[j]))
+        other_kdes_eff.append(deepcopy(posterior_kdes_eff[j]))
         other_priors.append(priors[j])
     return this_kde, other_kdes, this_kde_eff, other_kdes_eff, this_prior, other_priors
 
@@ -198,6 +203,7 @@ def get_log_kde_values(kde, kde_eff, prior, samples, parameters_15d, parameters_
         prior_eff[parameter] = prior[parameter]
     log_prior_eff = prior_eff.ln_prob(samples[parameters_eff], axis=0)
     return log_pos, log_pos_eff, log_prior, log_prior_eff
+
 def get_log_kde_values_list(kdes, kdes_eff, priors, samples, parameters_15d, parameters_eff):
     n_kdes = len(kdes)
     log_pos_list = []
@@ -205,7 +211,7 @@ def get_log_kde_values_list(kdes, kdes_eff, priors, samples, parameters_15d, par
     log_prior_list = []
     log_prior_eff_list = []
     for i in range(n_kdes):
-        log_pos, log_pos_eff, log_prior, log_prior_eff = get_log_kde_values(kdes[i], kdes_eff[i], priors[i], samples, parameters_15d, parameters_eff)
+        log_pos, log_pos_eff, log_prior, log_prior_eff = get_log_kde_values(kdes[i], kdes_eff[i], priors[i], samples[i], parameters_15d, parameters_eff)
         log_pos_list.append(log_pos)
         log_pos_eff_list.append(log_pos_eff)
         log_prior_list.append(log_prior)
@@ -253,7 +259,7 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15
             other_samples[j][parameters_eff] = other_samples_eff[j][parameters_eff]
         # Get the log posterior, log posterior effective, log prior, and log prior effective values
         log_pos_this, log_pos_this_eff, log_prior_this, log_prior_this_eff = get_log_kde_values(this_kde, this_kde_eff, this_prior, samples, parameters_15d, parameters_eff)
-        log_pos_others, log_pos_others_eff, log_prior_others, log_prior_others_eff = get_log_kde_values_list(other_kdes, other_kdes_eff, other_priors, samples, parameters_15d, parameters_eff)
+        log_pos_others, log_pos_others_eff, log_prior_others, log_prior_others_eff = get_log_kde_values_list(other_kdes, other_kdes_eff, other_priors, other_samples, parameters_15d, parameters_eff)
         # Now add up the log probabilities
         log_pos = log_pos_this + log_pos_others
         log_prior = log_prior_this + log_prior_others
@@ -266,12 +272,15 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15
         # Save the log weights
         log_weights_all.append(log_weight)
         # Define the full samples
-        samples_full = get_all_samples(samples, other_samples, i, parameters_eff, n_kdes)
+        samples_full, parameters_all = get_all_samples(samples, other_samples, i, parameters_eff, n_kdes)
         samples_all.append(samples_full)
     # Now combine the samples and weights
     samples_all = np.concatenate(samples_all, axis=0)
     log_weights_all = np.concatenate(log_weights_all, axis=0)
+    # Transform samples to a pandas DataFrame
+    samples_all = pd.DataFrame(samples_all, columns=parameters_all)
     # Now build the joint KDE
-    joint_kde = build_kde(samples_all, parameters_15d, log_weights=log_weights_all)
-    return joint_kde, samples_all, log_weights_all
+    #joint_kde = build_kde(samples_all, parameters_all, log_weights=log_weights_all)
+    joint_kde=None
+    return joint_kde, samples_all, log_weights_all, log_prior_this, log_prior_others, samples
 
