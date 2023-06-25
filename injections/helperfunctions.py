@@ -100,13 +100,14 @@ def build_kde(posterior, parameters, log_weights=None):
     if log_weights is None:
         sample_weight = None
     else:
+        # Set any NaN to very small number
+        log_weights[np.isnan(log_weights)] = -1.e30
         sample_weight = np.exp(log_weights-np.max(log_weights))
-        # Set any NaN to zero
-        sample_weight[np.isnan(sample_weight)] = 0
+        print(sample_weight)
         sample_weight = sample_weight/np.sum(sample_weight)
+        print(sample_weight)
     # Now build the kdes
     kde = KernelDensityTransformed(bandwidth='silverman', leaf_size=100, pt=QuantileTransformer(output_distribution='normal'))
-
     kde.fit(posterior[parameters], sample_weight=sample_weight)
     return kde
 
@@ -280,7 +281,6 @@ def joint_kde_analysis(posterior_kdes, posterior_kdes_eff, priors, parameters_15
     # Transform samples to a pandas DataFrame
     samples_all = pd.DataFrame(samples_all, columns=parameters_all)
     # Now build the joint KDE
-    #joint_kde = build_kde(samples_all, parameters_all, log_weights=log_weights_all)
-    joint_kde=None
-    return joint_kde, samples_all, log_weights_all, log_prior_this, log_prior_others, samples
+    joint_kde = build_kde(samples_all, parameters_all, log_weights=log_weights_all)
+    return joint_kde, samples_all, log_weights_all
 
